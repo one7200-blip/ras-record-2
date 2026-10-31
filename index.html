@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RAS 활동 기록장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* Layout: poster-style single column — teal-framed sheet on a peach ground, R/A/S colour coding throughout. Deliberately one bright poster look. */
+:root {
+  --ground: #fde9cf;
+  --sheet: #fffdf8;
+  --ink: #2c3440;
+  --muted: #6b7380;
+  --line: #e7dccb;
+  --teal: #1f8f9c;
+  --teal-dk: #156d77;
+  --r: #2a8fd8;  --r-bg: #dcefff;
+  --a: #ec5a4c;  --a-bg: #ffe2dc;
+  --s: #3aa65a;  --s-bg: #dcf2e1;
+  --gold: #f4b63f;
+  --display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body { background: var(--ground); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 720px; margin: 0 auto; padding: 20px 16px 48px; }
+h1, h2, h3, .disp { font-family: var(--display); font-weight: 400; text-wrap: balance; margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+/* ---------- Header ---------- */
+.top { text-align: center; display: grid; gap: 6px; justify-items: center; }
+.phone { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-size: 1.1rem; color: var(--muted); }
+.tog { display: inline-flex; align-items: center; gap: 4px; border-radius: 99px; padding: 2px 8px 2px 2px; font-size: .78rem; color: #fff; font-family: var(--display); }
+.tog i { width: 18px; height: 18px; border-radius: 50%; background: #fff; display: block; }
+.tog.off { background: var(--a); }
+.tog.on { background: var(--s); flex-direction: row-reverse; padding: 2px 2px 2px 8px; }
+.logo { display: flex; align-items: center; gap: 14px; }
+.logo .l { font-family: var(--display); font-size: clamp(3.4rem, 14vw, 5rem); line-height: 1; letter-spacing: .02em; }
+.logo .l b { font-weight: 400; display: inline-block; text-shadow: 3px 3px 0 rgba(44,52,64,.12); }
+.logo .l b:nth-child(1) { color: var(--r); transform: rotate(-4deg); }
+.logo .l b:nth-child(2) { color: var(--a); }
+.logo .l b:nth-child(3) { color: var(--s); transform: rotate(4deg); }
+.banner { background: var(--teal); color: #fff; font-family: var(--display); border-radius: 10px; padding: 6px 16px; font-size: .95rem; margin-top: 6px; }
+
+/* ---------- Sheet ---------- */
+.sheet { background: var(--sheet); border: 3px solid var(--teal); border-radius: 22px; padding: 22px 18px; margin-top: 16px; }
+.hello { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hello .who { font-family: var(--display); font-size: 1.25rem; }
+.hello .who small { font-family: var(--body); color: var(--muted); font-size: .85rem; margin-left: 6px; }
+.ghost { background: none; border: 1.5px solid var(--line); border-radius: 99px; padding: 4px 12px; font-size: .85rem; color: var(--muted); }
+.ghost:hover { border-color: var(--teal); color: var(--teal-dk); }
+
+.tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 16px 0 20px; }
+.tab { border: 2px solid var(--line); background: #fff; border-radius: 14px; padding: 10px 6px; font-family: var(--display); font-size: 1.05rem; color: var(--muted); }
+.tab[aria-selected="true"] { background: var(--teal); border-color: var(--teal); color: #fff; }
+
+.note { background: #fff6e0; border: 1.5px dashed var(--gold); border-radius: 12px; padding: 8px 12px; font-size: .85rem; color: #7a5a12; margin-bottom: 14px; }
+
+/* ---------- Forms ---------- */
+label.f { display: grid; gap: 4px; font-size: .9rem; color: var(--muted); }
+.in { width: 100%; border: 2px solid var(--line); background: #fff; border-radius: 12px; padding: 10px 12px; font-size: 1rem; color: var(--ink); }
+.in:focus { border-color: var(--teal); outline: none; }
+textarea.in { resize: vertical; min-height: 78px; }
+.row { display: grid; gap: 12px; }
+.row.c4 { grid-template-columns: repeat(3, 1fr); }
+.row.c2 { grid-template-columns: 1fr 1fr; }
+@media (max-width: 460px) { .row.c2 { grid-template-columns: 1fr; } }
+.cta { background: var(--teal); color: #fff; border: 0; border-radius: 14px; padding: 13px; font-family: var(--display); font-size: 1.15rem; width: 100%; box-shadow: 0 4px 0 var(--teal-dk); }
+.cta:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--teal-dk); }
+.cta:disabled { opacity: .5; cursor: default; }
+.err { color: var(--a); font-size: .9rem; min-height: 1.3em; }
+.ok { color: var(--s); }
+
+/* Area picker cards (poster's three panels) */
+.areas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.area { border: 2.5px solid transparent; border-radius: 16px; padding: 12px 8px 10px; text-align: center; display: grid; gap: 2px; justify-items: center; }
+.area .big { font-family: var(--display); font-size: 2.2rem; line-height: 1; }
+.area .en { font-size: .78rem; letter-spacing: .06em; }
+.area .ko { font-family: var(--display); font-size: 1.05rem; }
+.area.R { background: var(--r-bg); color: var(--r); }
+.area.A { background: var(--a-bg); color: var(--a); }
+.area.S { background: var(--s-bg); color: var(--s); }
+.area[aria-pressed="true"].R { border-color: var(--r); box-shadow: 0 4px 0 var(--r); }
+.area[aria-pressed="true"].A { border-color: var(--a); box-shadow: 0 4px 0 var(--a); }
+.area[aria-pressed="true"].S { border-color: var(--s); box-shadow: 0 4px 0 var(--s); }
+.area .hint { font-size: .72rem; color: var(--muted); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { border: 2px solid var(--line); background: #fff; border-radius: 99px; padding: 6px 14px; font-size: .92rem; }
+.chip[aria-pressed="true"] { border-color: var(--teal); background: #e3f4f5; color: var(--teal-dk); font-weight: 700; }
+.mood .chip { font-size: 1.3rem; padding: 4px 10px; line-height: 1.2; }
+.lbl { font-size: .9rem; color: var(--muted); margin-bottom: 6px; display: block; }
+.stack { display: grid; gap: 16px; }
+
+/* ---------- Record list ---------- */
+.lcount { margin-bottom: 14px; }
+.lcount .stat { border: 0; }
+.lcount .stat.R { background: var(--r-bg); color: var(--r); }
+.lcount .stat.A { background: var(--a-bg); color: var(--a); }
+.lcount .stat.S { background: var(--s-bg); color: var(--s); }
+.lcount .stat .t { color: inherit; font-family: var(--display); font-size: .95rem; }
+.lcount .stat .n small { font-size: 1rem; margin-left: 2px; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.list { display: grid; gap: 10px; }
+.rec { display: grid; grid-template-columns: 46px 1fr; gap: 12px; border: 1.5px solid var(--line); border-radius: 16px; padding: 12px; background: #fff; }
+.badge { width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-family: var(--display); font-size: 1.6rem; color: #fff; }
+.badge.R { background: var(--r); } .badge.A { background: var(--a); } .badge.S { background: var(--s); }
+.rec .meta { font-size: .8rem; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.rec .act { font-family: var(--display); font-size: 1.08rem; margin: 2px 0; overflow-wrap: anywhere; }
+.rec .feel { font-size: .92rem; overflow-wrap: anywhere; }
+.rec .body { min-width: 0; }
+.rec .tools { display: flex; gap: 6px; justify-content: flex-end; margin-top: 6px; }
+.rec .tools button { background: none; border: 0; color: var(--muted); font-size: .8rem; text-decoration: underline; }
+.rec .tools .yes { color: var(--a); font-weight: 700; }
+.empty { text-align: center; padding: 28px 12px; color: var(--muted); border: 2px dashed var(--line); border-radius: 16px; }
+.empty .disp { font-size: 1.2rem; color: var(--ink); margin-bottom: 4px; }
+
+/* ---------- Analysis ---------- */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat { background: #fff; border: 1.5px solid var(--line); border-radius: 16px; padding: 12px; text-align: center; }
+.stat .n { font-family: var(--display); font-size: 1.9rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.stat .t { font-size: .8rem; color: var(--muted); }
+.sec { margin-top: 24px; }
+.sec h3 { font-size: 1.2rem; margin-bottom: 10px; color: var(--teal-dk); }
+.bars { display: grid; gap: 10px; }
+.bar { display: grid; grid-template-columns: 72px 1fr 40px; gap: 10px; align-items: center; font-size: .9rem; }
+.bar .track { height: 18px; background: #f2ece2; border-radius: 99px; overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 99px; transition: width .5s; }
+.bar .v { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--display); }
+.msg { background: #e3f4f5; border-radius: 14px; padding: 12px 14px; font-size: .95rem; margin-top: 12px; }
+.msg b { font-family: var(--display); font-weight: 400; color: var(--teal-dk); }
+
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal .h { text-align: center; font-size: .75rem; color: var(--muted); }
+.cal .d { aspect-ratio: 1; max-width: 100%; border-radius: 8px; background: #f5efe5; display: grid; place-items: center; font-size: .75rem; color: var(--muted); position: relative; font-variant-numeric: tabular-nums; }
+.cal .d.has { color: #fff; font-weight: 700; }
+.cal .d.today { outline: 2px solid var(--teal); }
+.cal .d .dots { position: absolute; bottom: 3px; display: flex; gap: 2px; }
+.cal .d .dots i { width: 5px; height: 5px; border-radius: 50%; background: #fff; }
+.calhead { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.calhead button { background: #fff; border: 1.5px solid var(--line); border-radius: 10px; width: 34px; height: 30px; }
+
+/* Growth ladder */
+.ladder { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.step { text-align: center; padding: 10px 4px; border-radius: 14px; background: #f5efe5; color: var(--muted); font-size: .78rem; display: grid; gap: 2px; }
+.step .ic { font-size: 1.6rem; filter: grayscale(1); opacity: .45; }
+.step .nm { font-family: var(--display); font-size: .95rem; }
+.step.done { background: #fff4d6; color: var(--ink); }
+.step.done .ic { filter: none; opacity: 1; }
+.step.now { outline: 2.5px solid var(--gold); }
+.next { margin-top: 10px; font-size: .9rem; }
+.req { display: grid; gap: 6px; margin-top: 8px; }
+.req div { display: flex; gap: 8px; align-items: center; font-size: .88rem; }
+.req .ck { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--line); display: grid; place-items: center; font-size: .75rem; flex: none; }
+.req .ck.y { background: var(--s); border-color: var(--s); color: #fff; }
+
+.medals { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.medal { border: 1.5px solid var(--line); border-radius: 14px; padding: 10px; text-align: center; background: #fff; font-size: .78rem; color: var(--muted); }
+.medal .ic { font-size: 1.6rem; filter: grayscale(1); opacity: .4; }
+.medal .nm { font-family: var(--display); font-size: .95rem; color: var(--muted); }
+.medal.got { border-color: var(--gold); background: #fffaf0; }
+.medal.got .ic { filter: none; opacity: 1; }
+.medal.got .nm { color: var(--ink); }
+/* 성공 도장 */
+.medal { position: relative; }
+.seal { position: absolute; top: -10px; right: -8px; width: 44px; height: 44px; border-radius: 50%; border: 3px double #d9342b; color: #d9342b; background: rgba(255,250,240,.85); display: grid; place-items: center; font-family: var(--display); font-size: .85rem; letter-spacing: .05em; transform: rotate(-16deg); box-shadow: inset 0 0 0 2px rgba(217,52,43,.15); animation: stampIn .45s cubic-bezier(.3,1.6,.5,1) both; pointer-events: none; }
+.seal.big { width: 76px; height: 76px; font-size: 1.35rem; top: 14px; right: 18px; border-width: 4px; }
+@keyframes stampIn { from { transform: rotate(-16deg) scale(2.2); opacity: 0; } to { transform: rotate(-16deg) scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .seal { animation: none; } }
+
+/* Certificate */
+.cert { margin-top: 12px; border: 6px double var(--gold); border-radius: 18px; background: #fffaf0; padding: 22px 18px; text-align: center; display: grid; gap: 8px; }
+.cert .k { font-size: .8rem; letter-spacing: .3em; color: var(--muted); }
+.cert h2 { font-size: 1.8rem; }
+.cert .lv { font-family: var(--display); font-size: 1.3rem; color: var(--teal-dk); }
+.cert p { margin: 0; font-size: .95rem; }
+.cert .sig { font-size: .85rem; color: var(--muted); }
+.cert .rl { display: flex; justify-content: center; gap: 4px; font-family: var(--display); font-size: 1.5rem; }
+.cert .rl span:nth-child(1){color:var(--r)} .cert .rl span:nth-child(2){color:var(--a)} .cert .rl span:nth-child(3){color:var(--s)}
+
+/* Login intro panels */
+.intro { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+.intro .area { cursor: default; }
+.foot { text-align: center; margin-top: 18px; font-family: var(--display); color: var(--muted); }
+.foot b { font-weight: 400; color: var(--r); } .foot b+b { color: var(--a); } .foot b+b+b { color: var(--s); }
+/* Teacher dashboard */
+.wrap.wide { max-width: 1000px; }
+.tbar { display: flex; gap: 10px; align-items: end; flex-wrap: wrap; margin: 14px 0 6px; }
+.tbar label.f { width: 90px; }
+.tbar .cta { width: auto; padding: 10px 18px; font-size: 1rem; }
+.stats.c4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 560px) { .stats.c4 { grid-template-columns: repeat(2, 1fr); } }
+.lvcount { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.lvcount .step .cnt { font-family: var(--display); font-size: 1.3rem; color: var(--ink); font-variant-numeric: tabular-nums; }
+.quiet { display: flex; flex-wrap: wrap; gap: 6px; }
+.quiet span { background: var(--a-bg); color: #a3352a; border-radius: 99px; padding: 3px 10px; font-size: .85rem; }
+.tscroll { overflow-x: auto; border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
+table.cls { width: 100%; border-collapse: collapse; font-size: .9rem; min-width: 620px; }
+table.cls th { font-weight: 400; font-family: var(--display); color: var(--muted); text-align: center; padding: 10px 6px; border-bottom: 2px solid var(--line); background: #faf6ef; }
+table.cls td { text-align: center; padding: 9px 6px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+table.cls td.nm { text-align: left; font-family: var(--display); font-size: 1rem; }
+table.cls tbody tr { cursor: pointer; }
+table.cls tbody tr:hover, table.cls tbody tr.sel { background: #e3f4f5; }
+table.cls .mini { display: inline-flex; height: 10px; width: 80px; border-radius: 99px; overflow: hidden; background: #f2ece2; vertical-align: middle; }
+table.cls .mini i { display: block; height: 100%; }
+.old { color: var(--a); }
+.tdetail { margin-top: 14px; border: 2px solid var(--teal); border-radius: 16px; padding: 14px; background: #fff; }
+.tdetail .hd { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.tlink { background: none; border: 0; color: var(--teal-dk); text-decoration: underline; font-size: .9rem; padding: 0; }
+.sorts { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+/* Challenge period & plan */
+.period { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; background: #e3f4f5; border-radius: 14px; padding: 10px 14px; margin-bottom: 16px; }
+.period .dd { font-family: var(--display); font-size: 1.35rem; color: var(--teal-dk); font-variant-numeric: tabular-nums; }
+.period .pd { font-size: .88rem; color: var(--muted); }
+.plancards { display: grid; gap: 12px; }
+.pcard { border-radius: 18px; padding: 14px; display: grid; gap: 10px; }
+.pcard.R { background: var(--r-bg); } .pcard.A { background: var(--a-bg); } .pcard.S { background: var(--s-bg); }
+.pcard .ph { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-size: 1.15rem; }
+.pcard .ph .big { font-size: 2rem; line-height: 1; }
+.pcard.R .ph { color: var(--r); } .pcard.A .ph { color: var(--a); } .pcard.S .ph { color: var(--s); }
+.pcard textarea.in { min-height: 64px; }
+.pcard .in:disabled { background: rgba(255,255,255,.6); color: var(--ink); }
+.goal { display: flex; align-items: center; gap: 10px; font-size: .95rem; flex-wrap: wrap; }
+.goal button { width: 36px; height: 36px; border-radius: 10px; border: 2px solid var(--line); background: #fff; font-size: 1.2rem; line-height: 1; }
+.goal output { font-family: var(--display); font-size: 1.5rem; min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; }
+.lockmsg { background: #fff6e0; border: 1.5px dashed var(--gold); border-radius: 12px; padding: 10px 12px; font-size: .9rem; color: #7a5a12; }
+.progs { display: grid; gap: 10px; }
+.prog { border-radius: 16px; padding: 12px 14px; display: grid; grid-template-columns: 46px 1fr auto; gap: 12px; align-items: center; background: #fff; border: 1.5px solid var(--line); }
+.prog .body { min-width: 0; }
+.prog .pl { font-size: .9rem; overflow-wrap: anywhere; margin: 2px 0 6px; }
+.prog .track { height: 14px; background: #f2ece2; border-radius: 99px; overflow: hidden; }
+.prog .fill { height: 100%; border-radius: 99px; transition: width .5s; }
+.prog .cnt { font-family: var(--display); font-size: 1.3rem; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.prog .cnt small { font-size: .85rem; color: var(--muted); }
+.prog.done { border-color: var(--gold); background: #fffaf0; }
+.stamp { display: inline-block; font-family: var(--display); font-size: .8rem; color: #fff; background: var(--gold); border-radius: 99px; padding: 1px 8px; margin-left: 6px; vertical-align: 2px; }
+.cert .plans { text-align: left; display: grid; gap: 4px; font-size: .9rem; max-width: 420px; margin: 0 auto; }
+table.cls td.g { white-space: nowrap; }
+table.cls td.g.ok { color: var(--s); font-weight: 700; }
+.tplan { display: grid; gap: 6px; margin-bottom: 12px; font-size: .9rem; }
+.tplan div { display: grid; grid-template-columns: 26px 1fr auto; gap: 8px; align-items: start; }
+@media (max-width: 460px) { .tab { font-size: .92rem; padding: 9px 2px; } }
+.next-cta { background: #fffaf0; border: 2px solid var(--gold); border-radius: 16px; padding: 14px; display: grid; gap: 10px; text-align: center; }
+.next-cta .disp { font-size: 1.2rem; }
+.next-cta .cta { background: var(--gold); box-shadow: 0 4px 0 #c98f1c; color: #4a3505; }
+.hist { display: grid; gap: 8px; margin-top: 6px; }
+.hist h3 { font-size: 1.1rem; color: var(--teal-dk); }
+.hrow { border: 1.5px solid var(--line); border-radius: 14px; padding: 10px 12px; background: #fff; display: grid; gap: 4px; font-size: .88rem; }
+.hrow .ht { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-family: var(--display); font-size: 1rem; }
+.hrow .hl { display: grid; grid-template-columns: 18px 1fr auto; gap: 6px; }
+.certs { display: grid; gap: 14px; }
+.rbadge { display: inline-block; font-family: var(--display); font-size: .82rem; background: var(--teal); color: #fff; border-radius: 99px; padding: 1px 9px; }
+/* Teacher viewing a student's screen */
+.viewbtn { background: #fff; border: 1.5px solid var(--teal); color: var(--teal-dk); border-radius: 99px; padding: 3px 10px; font-size: .82rem; white-space: nowrap; }
+.viewbtn:hover { background: #e3f4f5; }
+.viewbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--ink); color: #fff; border-radius: 14px; padding: 10px 14px; margin-bottom: 14px; font-size: .92rem; }
+.viewbar .ghost { color: #fff; border-color: rgba(255,255,255,.5); }
+.viewbar .ghost:hover { color: #fff; border-color: #fff; }
+#app.viewing #tab-write, #app.viewing #logout, #app.viewing .goal button, #app.viewing #pSave { display: none; }
+#app.viewing .tabs { grid-template-columns: repeat(3, 1fr); }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 18px; border-radius: 99px; font-size: .95rem; z-index: 9; }
+@media (max-width: 420px) {
+  .areas .hint { display: none; }
+  .ladder .step { font-size: .7rem; }
+  .bar { grid-template-columns: 60px 1fr 34px; }
+}
+@media (prefers-reduced-motion: reduce) { .bar .fill { transition: none; } }
+[hidden]{display:none!important}
+body{margin:0}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="phone">스마트폰을 잠시 내려놓고 · Phone <span class="tog off"><i></i>OFF</span></div>
+    <div class="logo"><div class="l" aria-label="RAS"><b>R</b><b>A</b><b>S</b></div><span class="tog on" style="font-size:1rem;padding:4px 4px 4px 12px"><i style="width:24px;height:24px"></i>ON</span></div>
+    <div class="banner">2026. 10. 22 ~ 11. 30 · 나의 RAS 도전 기록장</div>
+  </header>
+
+  <main class="sheet">
+    <!-- LOGIN -->
+    <section id="login">
+      <h2 style="text-align:center;font-size:1.5rem;margin-bottom:6px">나의 RAS 기록장 열기</h2>
+      <p style="text-align:center;color:var(--muted);margin:0 0 16px">학년, 반, 번호, 이름을 쓰면 내 기록이 계속 쌓여요.</p>
+      <div class="intro" aria-hidden="true">
+        <div class="area R"><span class="big">R</span><span class="en">Reading</span><span class="ko">독서</span></div>
+        <div class="area A"><span class="big">A</span><span class="en">Art</span><span class="ko">예술문화</span></div>
+        <div class="area S"><span class="big">S</span><span class="en">Sports</span><span class="ko">스포츠</span></div>
+      </div>
+      <form id="loginForm" class="stack" autocomplete="off">
+        <div class="row c4">
+          <label class="f">학년<select class="in" id="lgGrade" required><option value="">선택</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option></select></label>
+          <label class="f">반<select class="in" id="lgClass" required><option value="">선택</option><option value="1">1반</option><option value="2">2반</option><option value="3">3반</option><option value="4">4반</option></select></label>
+          <label class="f">번호<input class="in" id="lgNum" type="number" min="1" max="60" inputmode="numeric" required placeholder="12"></label>
+        </div>
+        <label class="f">이름<input class="in" id="lgName" type="text" maxlength="20" required placeholder="홍길동"></label>
+        <label class="f">비밀번호<input class="in" id="lgPw" type="password" inputmode="numeric" maxlength="20" required placeholder="숫자 4자리 이상"></label>
+        <p style="margin:-6px 0 0;font-size:.82rem;color:var(--muted)">처음 들어올 때 쓴 비밀번호가 내 비밀번호가 돼요. 잊어버리면 선생님께 말씀드려요.</p>
+        <div class="err" id="lgErr" role="alert"></div>
+        <button class="cta" id="lgBtn" type="submit">들어가기</button>
+      </form>
+      <p style="text-align:center;margin:14px 0 0" id="teacherEntry"><button class="tlink" type="button" id="toTeacher">선생님 대시보드로 가기 →</button><br><span style="font-size:.82rem;color:var(--muted)">선생님 비밀번호: 0000</span></p>
+    </section>
+
+    <!-- TEACHER -->
+    <section id="teacher" hidden>
+      <div class="hello">
+        <h2 style="font-size:1.4rem">선생님 대시보드</h2>
+        <button class="ghost" id="tBack" type="button">학생 화면으로</button>
+      </div>
+      <form id="tLock" class="stack" style="max-width:320px;margin:24px auto 8px;text-align:center" autocomplete="off">
+        <p style="margin:0;color:var(--muted)">선생님 비밀번호를 입력해 주세요.</p>
+        <div class="note" style="margin:0">선생님 비밀번호는 <b>0000</b> 이에요.</div>
+        <input class="in" id="tPw" type="password" inputmode="numeric" maxlength="20" aria-label="선생님 비밀번호" placeholder="0000" style="text-align:center;font-size:1.3rem;letter-spacing:.3em">
+        <div class="err" id="tPwErr" role="alert"></div>
+        <button class="cta" type="submit">들어가기</button>
+      </form>
+      <div id="tMain" hidden>
+      <form class="tbar" id="tForm">
+        <label class="f">학년<select class="in" id="tGrade" required><option value="">선택</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option></select></label>
+        <label class="f">반<select class="in" id="tClass" required><option value="">선택</option><option value="1">1반</option><option value="2">2반</option><option value="3">3반</option><option value="4">4반</option></select></label>
+        <button class="cta" type="submit">반 불러오기</button>
+      </form>
+      <div id="tBody"><div class="empty" style="margin-top:12px"><div class="disp">학년과 반을 고르면 반 전체 기록이 보여요</div>학생들이 기록을 남기면 여기에 바로바로 반영돼요.</div></div>
+      </div>
+    </section>
+
+    <!-- APP -->
+    <section id="app" hidden>
+      <div class="viewbar" id="viewBar" hidden><span>👀 <b>선생님 보기</b> · <span id="viewWho"></span> 학생 화면이에요. 보기만 할 수 있어요.</span><button class="ghost" id="viewBack" type="button">← 대시보드로 돌아가기</button></div>
+      <div class="hello">
+        <div class="who" id="who"></div>
+        <span style="display:flex;gap:6px;flex-wrap:wrap"><button class="ghost" id="logout" type="button">다른 친구로 바꾸기</button></span>
+      </div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-tab="plan" aria-selected="false" id="tab-plan">나의 목표</button>
+        <button class="tab" role="tab" data-tab="write" aria-selected="true" id="tab-write">기록하기</button>
+        <button class="tab" role="tab" data-tab="list" aria-selected="false" id="tab-list">내 기록</button>
+        <button class="tab" role="tab" data-tab="grow" aria-selected="false" id="tab-grow">달성 현황</button>
+      </div>
+      <div class="period"><div><div class="pd">RAS 도전 기간 · 10월 22일 ~ 11월 30일</div><div class="dd" id="dday"></div></div><div class="pd" id="periodSum"></div></div>
+
+      <!-- PLAN -->
+      <div id="pane-plan" class="stack" hidden>
+        <p style="margin:0"><b>11월 30일까지</b> 독서, 예술문화, 스포츠 활동을 각각 몇 번 할지 정해요. 목표를 채우면 <b>나만의 목표 달성 배지</b>를 받아요.</p>
+        <div class="plancards">
+          <div class="pcard R"><div class="ph"><span class="big">R</span>독서</div>
+            <div class="goal"><span>11월 30일까지</span><button type="button" data-a="R" data-step="-1" aria-label="독서 목표 줄이기">−</button><output id="gR">5</output><span>번</span><button type="button" data-a="R" data-step="1" aria-label="독서 목표 늘리기">+</button></div></div>
+          <div class="pcard A"><div class="ph"><span class="big">A</span>예술문화</div>
+            <div class="goal"><span>11월 30일까지</span><button type="button" data-a="A" data-step="-1" aria-label="예술문화 목표 줄이기">−</button><output id="gA">5</output><span>번</span><button type="button" data-a="A" data-step="1" aria-label="예술문화 목표 늘리기">+</button></div></div>
+          <div class="pcard S"><div class="ph"><span class="big">S</span>스포츠</div>
+            <div class="goal"><span>11월 30일까지</span><button type="button" data-a="S" data-step="-1" aria-label="스포츠 목표 줄이기">−</button><output id="gS">5</output><span>번</span><button type="button" data-a="S" data-step="1" aria-label="스포츠 목표 늘리기">+</button></div></div>
+        </div>
+        <div id="planNote" class="lockmsg"></div>
+        <div class="err" id="pErr" role="alert"></div>
+        <button class="cta" id="pSave" type="button">목표 저장하기</button>
+      </div>
+
+      <!-- WRITE -->
+      <div id="pane-write" class="stack">
+        <label class="f">날짜<input class="in" id="wDate" type="date" required></label>
+        <div>
+          <span class="lbl">어떤 활동을 했나요?</span>
+          <div class="areas" id="wArea">
+            <button type="button" class="area R" data-v="R" aria-pressed="false"><span class="big">R</span><span class="ko">독서</span><span class="hint">책을 읽고 생각을 나눠요</span></button>
+            <button type="button" class="area A" data-v="A" aria-pressed="false"><span class="big">A</span><span class="ko">예술문화</span><span class="hint">그리고 만들고 연주해요</span></button>
+            <button type="button" class="area S" data-v="S" aria-pressed="false"><span class="big">S</span><span class="ko">스포츠</span><span class="hint">뛰고 놀며 건강해져요</span></button>
+          </div>
+        </div>
+        <div>
+          <span class="lbl">언제 했나요?</span>
+          <div class="chips" id="wSlot">
+            <button type="button" class="chip" data-v="morning" aria-pressed="false">아침 활동</button>
+            <button type="button" class="chip" data-v="break" aria-pressed="false">쉬는 시간</button>
+            <button type="button" class="chip" data-v="kicle" aria-pressed="false">키클 타임</button>
+            <button type="button" class="chip" data-v="lunch" aria-pressed="false">점심 시간</button>
+            <button type="button" class="chip" data-v="etc" aria-pressed="false">그 밖에</button>
+          </div>
+        </div>
+        <label class="f">무엇을 했나요?<input class="in" id="wAct" type="text" maxlength="60" placeholder="예) 『마당을 나온 암탉』 3장 읽기"></label>
+        <label class="f">하고 나서 어떤 생각이 들었나요?<textarea class="in" id="wFeel" maxlength="300" placeholder="예) 잎싹이 용감해서 나도 새로운 일에 도전해 보고 싶어졌다."></textarea></label>
+        <div>
+          <span class="lbl">오늘 기분은?</span>
+          <div class="chips mood" id="wMood">
+            <button type="button" class="chip" data-v="5" aria-pressed="false" aria-label="아주 좋아요">😆</button>
+            <button type="button" class="chip" data-v="4" aria-pressed="false" aria-label="좋아요">🙂</button>
+            <button type="button" class="chip" data-v="3" aria-pressed="false" aria-label="보통이에요">😐</button>
+            <button type="button" class="chip" data-v="2" aria-pressed="false" aria-label="조금 아쉬워요">😕</button>
+            <button type="button" class="chip" data-v="1" aria-pressed="false" aria-label="힘들었어요">😣</button>
+          </div>
+        </div>
+        <div class="err" id="wErr" role="alert"></div>
+        <button class="cta" id="wSave" type="button">기록 저장하기</button>
+      </div>
+
+      <!-- LIST -->
+      <div id="pane-list" hidden>
+        <div class="stats lcount" id="lCount"></div>
+        <div class="filters" id="lFilter">
+          <button type="button" class="chip" data-v="all" aria-pressed="true">전체</button>
+          <button type="button" class="chip" data-v="R" aria-pressed="false">R 독서</button>
+          <button type="button" class="chip" data-v="A" aria-pressed="false">A 예술문화</button>
+          <button type="button" class="chip" data-v="S" aria-pressed="false">S 스포츠</button>
+        </div>
+        <div class="list" id="list"></div>
+      </div>
+
+      <!-- GROW -->
+      <div id="pane-grow" hidden></div>
+    </section>
+  </main>
+  <p class="foot">즐거운 하루가 <b>R</b><b>A</b><b>S</b> 로 더 즐거워 집니다.</p>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script>
+/* ---------- Supabase 연결 (공개 키라서 페이지에 넣어도 괜찮아요) ---------- */
+const SB_URL = "https://hryzgwrhynoteisuvizq.supabase.co";
+const SB_KEY = "sb_publishable_fHaZpR3u7_rC8qVQ8dHKYQ_fcH1ICV_";
+
+/* ---------- 도전 기간 ---------- */
+const START = "2026-10-22", END = "2026-11-30";
+
+async function rpc(fn, args) {
+  let res;
+  try {
+    res = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, {
+      method: "POST",
+      headers: { apikey: SB_KEY, "Content-Type": "application/json" },
+      body: JSON.stringify(args || {}),
+    });
+  } catch (e) { const err = new Error("network"); err.code = "network"; throw err; }
+  const txt = await res.text();
+  let data = null; try { data = txt ? JSON.parse(txt) : null; } catch (e) {}
+  if (!res.ok) {
+    const code = data?.code === "PGRST202" || data?.code === "PGRST205" ? "server_not_ready" : data?.message || "request_failed";
+    const err = new Error(code); err.code = code; throw err;
+  }
+  return data;
+}
+const ss = {
+  get(k) { try { return JSON.parse(sessionStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+};
+const NET_MSG = "인터넷 연결을 확인한 뒤 다시 시도해 주세요.";
+const SETUP_MSG = "서버 설정(SQL)이 아직 적용되지 않았어요. 선생님께 알려 주세요.";
+const failMsg = (e, what) => e?.code === "server_not_ready" ? SETUP_MSG : `${what}. ${NET_MSG}`;
+
+const AREA = { R: { ko: "독서", c: "var(--r)" }, A: { ko: "예술문화", c: "var(--a)" }, S: { ko: "스포츠", c: "var(--s)" } };
+const SLOT = { morning: "아침 활동", break: "쉬는 시간", kicle: "키클 타임", lunch: "점심 시간", etc: "그 밖에" };
+const MOOD = { 5: "😆", 4: "🙂", 3: "😐", 2: "😕", 1: "😣" };
+/* 배지: s = 기간 안 기록 통계, p = 나만의 목표 달성 정보 */
+const MEDALS = [
+  { ic: "🏆", nm: "나만의 목표 달성", ok: (s, p) => p.all, big: true,
+    d: (s, p) => p.goal ? `독서 ${p.goal.R}번 · 예술문화 ${p.goal.A}번 · 스포츠 ${p.goal.S}번 모두 채우기` : "세 영역 목표 모두 채우기" },
+  { ic: "📚", nm: "독서 목표 달성", ok: (s, p) => p.done.R, d: (s, p) => goalText("R", p) },
+  { ic: "🎨", nm: "예술문화 목표 달성", ok: (s, p) => p.done.A, d: (s, p) => goalText("A", p) },
+  { ic: "⚽", nm: "스포츠 목표 달성", ok: (s, p) => p.done.S, d: (s, p) => goalText("S", p) },
+  { ic: "🌱", nm: "첫걸음", d: "첫 기록 남기기", ok: s => s.total >= 1 },
+  { ic: "⚖️", nm: "균형 잡기", d: "세 영역 모두 3번", ok: s => Math.min(s.cnt.R, s.cnt.A, s.cnt.S) >= 3 },
+  { ic: "🔥", nm: "연속 3일", d: "3일 연속 기록", ok: s => s.bestStreak >= 3 },
+  { ic: "🏃", nm: "연속 7일", d: "7일 연속 기록", ok: s => s.bestStreak >= 7 },
+  { ic: "🍱", nm: "점심 탐험가", d: "점심 시간 5번", ok: s => s.slot.lunch >= 5 },
+  { ic: "✍️", nm: "생각 부자", d: "느낀 점 50자 이상 5번", ok: s => s.longFeel >= 5 },
+];
+
+/* 배지 설명: 학생이 정한 목표 숫자와 지금 한 횟수 */
+const goalText = (a, p) => p.goal ? `${AREA[a].ko} ${p.goal[a]}번 채우기 (지금 ${p.cnt[a]}번)` : `${AREA[a].ko} 목표 횟수 채우기`;
+const medalDesc = (M, s, p) => typeof M.d === "function" ? M.d(s, p) : M.d;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+const todayStr = () => ymd(new Date());
+const fmtDate = s => { const [y, m, d] = s.split("-").map(Number); const w = "일월화수목금토"[new Date(y, m - 1, d).getDay()]; return `${m}월 ${d}일 (${w})`; };
+const toRec = r => ({ ...r, createdAt: Date.parse(r.created_at) || 0 });
+const inPeriod = r => r.date >= START && r.date <= END;
+const dayDiff = (a, b) => Math.round((new Date(b + "T00:00") - new Date(a + "T00:00")) / 864e5);
+const periodOpen = () => todayStr() <= END;
+function toast(t) { const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 2800); }
+
+let me = null, token = null, records = [], myGoals = null, filter = "all", calMonth = null, pendingDelete = null;
+let viewAs = false, viewStash = null;   // 선생님이 학생 화면을 보는 중인지
+
+/* ---------- 나만의 목표 달성 계산 (도전 기간 안의 기록만 셈) ---------- */
+const toGoals = g => g ? { R: g.r_goal, A: g.a_goal, S: g.s_goal } : null;
+function progress(rs, goal) {
+  const cnt = { R: 0, A: 0, S: 0 };
+  rs.filter(inPeriod).forEach(r => cnt[r.area]++);
+  if (!goal) return { cnt, goal: null, done: { R: false, A: false, S: false }, nDone: 0, all: false, pct: 0 };
+  const done = { R: cnt.R >= goal.R, A: cnt.A >= goal.A, S: cnt.S >= goal.S };
+  const nDone = +done.R + +done.A + +done.S;
+  return { cnt, goal, done, nDone, all: nDone === 3, pct: (Math.min(cnt.R, goal.R) + Math.min(cnt.A, goal.A) + Math.min(cnt.S, goal.S)) / (goal.R + goal.A + goal.S) };
+}
+
+/* ---------- 학생 로그인 ---------- */
+async function login(grade, cls, num, name, pw) {
+  const r = await rpc("student_login", { p_grade: grade, p_cls: cls, p_num: num, p_name: name, p_pw: pw });
+  if (r?.error) {
+    throw new Error({
+      wrong_name: "이 번호로 이미 다른 이름이 등록되어 있어요. 학년·반·번호·이름을 다시 확인해 주세요.",
+      wrong_pw: "비밀번호가 맞지 않아요. 잊어버렸다면 선생님께 초기화를 부탁드려요.",
+      locked: "비밀번호를 여러 번 틀려서 5분 동안 잠겼어요. 잠시 뒤 다시 해 주세요.",
+      bad_input: "학년(1~6), 반, 번호와 이름, 4자리 이상 비밀번호를 확인해 주세요.",
+    }[r.error] || "기록장을 열지 못했어요.");
+  }
+  me = r.student; token = r.token;
+  ss.set("ras:sess", { me, token });
+  await enterApp();
+  if (r.first) toast("비밀번호가 정해졌어요. 다음에도 같은 비밀번호로 들어와요!");
+}
+function sessionExpired() {
+  ss.set("ras:sess", null); me = null; token = null; records = []; myGoals = null;
+  $("app").hidden = true; $("login").hidden = false;
+  $("lgErr").textContent = "오래 지나서 다시 들어와야 해요. 비밀번호를 한 번 더 입력해 주세요.";
+}
+async function loadAll() {
+  try {
+    const [rs, g] = await Promise.all([rpc("my_records", { p_token: token }), rpc("get_my_goals", { p_token: token })]);
+    records = (rs || []).map(toRec); myGoals = toGoals(g);
+    renderAll();
+    return true;
+  } catch (e) {
+    if (e.code === "not_logged_in") sessionExpired(); else toast(failMsg(e, "기록을 불러오지 못했어요"));
+    return false;
+  }
+}
+async function enterApp() {
+  $("login").hidden = true; $("app").hidden = false;
+  $("who").innerHTML = `${esc(me.name)}<small>${me.grade}학년 ${me.cls}반 ${me.num}번</small>`;
+  const t = todayStr();
+  $("wDate").min = START; $("wDate").max = t < END ? t : END;
+  $("wDate").value = t < START ? START : t > END ? END : t;
+  records = []; myGoals = null; renderAll();
+  if (await loadAll() && !myGoals) { selectTab("plan"); toast("먼저 11월 30일까지의 나만의 목표를 정해요!"); }
+}
+function renderPeriod() {
+  const t = todayStr();
+  $("dday").textContent = t < START ? `시작까지 ${dayDiff(t, START)}일` : t > END ? "도전 기간이 끝났어요" : `D-${dayDiff(t, END)} · ${dayDiff(START, t) + 1}일째`;
+  const p = progress(records, myGoals);
+  $("periodSum").innerHTML = !myGoals ? `<b>목표를 아직 정하지 않았어요</b>` : p.all ? `<b>🏆 나만의 목표 달성!</b>` : `목표 3개 중 <b>${p.nDone}개</b> 달성`;
+}
+
+/* ---------- 나의 목표 ---------- */
+const goals = { R: 5, A: 5, S: 5 };
+function renderPlan() {
+  if (myGoals) Object.assign(goals, myGoals);
+  ["R", "A", "S"].forEach(a => $("g" + a).textContent = goals[a]);
+  const open = periodOpen();
+  document.querySelectorAll(".goal button").forEach(b => b.hidden = !open);
+  $("pSave").hidden = !open;
+  $("pSave").textContent = myGoals ? "목표 바꿔서 저장하기" : "목표 저장하기";
+  $("planNote").innerHTML = viewAs ? (myGoals ? "학생이 정한 목표예요." : "이 학생은 아직 목표를 정하지 않았어요.") : !open ? "도전 기간이 끝나서 목표를 바꿀 수 없어요."
+    : myGoals ? "목표는 11월 30일까지 언제든 바꿀 수 있어요. 너무 쉬운 목표보다 조금 노력하면 닿을 목표가 좋아요!"
+    : "−, + 버튼으로 횟수를 고른 뒤 <b>목표 저장하기</b>를 눌러요.";
+}
+document.querySelector(".plancards").addEventListener("click", e => {
+  const b = e.target.closest("button[data-step]"); if (!b || b.hidden) return;
+  const a = b.dataset.a; goals[a] = Math.max(1, Math.min(50, goals[a] + Number(b.dataset.step)));
+  $("g" + a).textContent = goals[a];
+});
+$("pSave").addEventListener("click", async () => {
+  $("pErr").textContent = ""; $("pSave").disabled = true;
+  const isNew = !myGoals;
+  try {
+    const g = await rpc("save_goals", { p_token: token, p_r: goals.R, p_a: goals.A, p_s: goals.S });
+    myGoals = toGoals(g); renderAll();
+    toast(isNew ? "목표를 정했어요! 이제 실천하고 기록해요." : "목표를 바꿨어요!");
+    if (isNew) selectTab("write");
+  } catch (e) {
+    if (e.code === "not_logged_in") { sessionExpired(); return; }
+    $("pErr").textContent = failMsg(e, "저장하지 못했어요");
+  } finally { $("pSave").disabled = false; }
+});
+
+/* ---------- 기록하기 ---------- */
+const pick = { area: null, slot: null, mood: null };
+function bindPicker(id, field) {
+  $(id).addEventListener("click", e => {
+    const b = e.target.closest("button[data-v]"); if (!b) return;
+    pick[field] = b.dataset.v;
+    $(id).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  });
+}
+bindPicker("wArea", "area"); bindPicker("wSlot", "slot"); bindPicker("wMood", "mood");
+
+$("wSave").addEventListener("click", async () => {
+  const date = $("wDate").value, act = $("wAct").value.trim(), feel = $("wFeel").value.trim();
+  const miss = [!date && "날짜", !pick.area && "활동 영역", !pick.slot && "시간", !act && "한 일", !feel && "느낀 점"].filter(Boolean);
+  if (miss.length) { $("wErr").textContent = miss.join(", ") + "을(를) 채워 주세요."; return; }
+  if (date > todayStr()) { $("wErr").textContent = "앞으로 올 날짜는 기록할 수 없어요."; return; }
+  if (date < START || date > END) { $("wErr").textContent = "도전 기간(10월 22일 ~ 11월 30일) 안의 날짜만 기록할 수 있어요."; return; }
+  $("wErr").textContent = ""; $("wSave").disabled = true;
+  const area = pick.area, before = progress(records, myGoals);
+  try {
+    const r = await rpc("add_record", { p_token: token, p_date: date, p_area: area, p_slot: pick.slot, p_activity: act, p_feeling: feel, p_mood: Number(pick.mood || 3) });
+    records = [toRec(r), ...records]; renderAll();
+    $("wAct").value = ""; $("wFeel").value = "";
+    ["wArea", "wSlot", "wMood"].forEach(id => $(id).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", "false")));
+    pick.area = pick.slot = pick.mood = null;
+    const after = progress(records, myGoals);
+    toast(!myGoals ? "기록을 저장했어요!"
+      : after.all && !before.all ? "🏆 나만의 목표 달성! ‘달성 현황’에서 배지를 확인해요."
+      : after.done[area] && !before.done[area] ? `${AREA[area].ko} 목표 달성 배지를 받았어요! 🎉`
+      : `기록을 저장했어요! ${AREA[area].ko} ${after.cnt[area]}/${after.goal[area]}`);
+  } catch (e) {
+    if (e.code === "not_logged_in") { sessionExpired(); return; }
+    $("wErr").textContent = e.code === "future_date" ? "앞으로 올 날짜는 기록할 수 없어요." : failMsg(e, "저장하지 못했어요");
+  } finally { $("wSave").disabled = false; }
+});
+
+/* ---------- 내 기록 ---------- */
+$("lFilter").addEventListener("click", e => {
+  const b = e.target.closest("button[data-v]"); if (!b) return;
+  filter = b.dataset.v;
+  $("lFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  renderList();
+});
+function sorted(rs) { return [...rs].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt - a.createdAt); }
+function recHtml(r, withTools) {
+  return `<article class="rec">
+      <div class="badge ${r.area}">${r.area}</div>
+      <div class="body">
+        <div class="meta"><span>${fmtDate(r.date)}</span><span>· ${SLOT[r.slot] || ""}</span><span>· ${AREA[r.area].ko}</span><span>${MOOD[r.mood] || ""}</span>${inPeriod(r) ? "" : `<span>· 도전 기간 밖</span>`}</div>
+        <div class="act">${esc(r.activity)}</div>
+        <div class="feel">${esc(r.feeling)}</div>
+        ${withTools && !viewAs ? `<div class="tools">${pendingDelete === r.id
+          ? `<span style="font-size:.8rem">정말 지울까요?</span><button class="yes" data-del="${r.id}">지우기</button><button data-cancel>그대로 두기</button>`
+          : `<button data-ask="${r.id}">지우기</button>`}</div>` : ""}
+      </div>
+    </article>`;
+}
+function renderList() {
+  const n = { R: 0, A: 0, S: 0 }; records.forEach(r => n[r.area]++);
+  $("lCount").innerHTML = ["R", "A", "S"].map(a =>
+    `<div class="stat ${a}"><div class="t">${a} ${AREA[a].ko}</div><div class="n">${n[a]}<small>개</small></div></div>`).join("");
+  const rows = sorted(records).filter(r => filter === "all" || r.area === filter);
+  $("list").innerHTML = rows.length ? rows.map(r => recHtml(r, true)).join("")
+    : `<div class="empty"><div class="disp">${records.length ? "이 영역 기록이 아직 없어요" : "첫 기록을 남겨 볼까요?"}</div>‘기록하기’에서 오늘 한 R·A·S 활동을 적으면 여기에 쌓여요.</div>`;
+}
+$("list").addEventListener("click", async e => {
+  const t = e.target;
+  if (t.dataset.ask) { pendingDelete = t.dataset.ask; renderList(); }
+  else if (t.hasAttribute("data-cancel")) { pendingDelete = null; renderList(); }
+  else if (t.dataset.del) {
+    const id = t.dataset.del; pendingDelete = null;
+    try { await rpc("delete_record", { p_token: token, p_id: id }); records = records.filter(r => r.id !== id); renderAll(); toast("기록을 지웠어요"); }
+    catch (err) { if (err.code === "not_logged_in") sessionExpired(); else { toast(failMsg(err, "지우지 못했어요")); renderList(); } }
+  }
+});
+
+/* ---------- 달성 현황 ---------- */
+function stats(rs) {
+  const cnt = { R: 0, A: 0, S: 0 }, slot = { morning: 0, break: 0, kicle: 0, lunch: 0, etc: 0 };
+  let moodSum = 0, longFeel = 0;
+  const days = new Set();
+  rs.forEach(r => { cnt[r.area] = (cnt[r.area] || 0) + 1; slot[r.slot] = (slot[r.slot] || 0) + 1; moodSum += r.mood || 3; days.add(r.date); if ((r.feeling || "").length >= 50) longFeel++; });
+  const ds = [...days].sort();
+  let best = 0, run = 0, prev = null;
+  ds.forEach(d => { const t = new Date(d + "T00:00"); run = prev && Math.round((t - prev) / 864e5) === 1 ? run + 1 : 1; best = Math.max(best, run); prev = t; });
+  let cur = 0; { const c = new Date(todayStr() + "T00:00"); if (!days.has(ymd(c))) c.setDate(c.getDate() - 1); while (days.has(ymd(c))) { cur++; c.setDate(c.getDate() - 1); } }
+  return { total: rs.length, cnt, slot, days: days.size, bestStreak: best, curStreak: cur, mood: rs.length ? moodSum / rs.length : 0, longFeel };
+}
+function renderGrow() {
+  const prs = records.filter(inPeriod), s = stats(prs), p = progress(records, myGoals);
+  const slotMax = Math.max(1, ...Object.values(s.slot));
+
+  const progHtml = myGoals ? ["R", "A", "S"].map(a => `
+      <div class="prog${p.done[a] ? " done" : ""}">
+        <div class="badge ${a}">${a}</div>
+        <div class="body"><b class="disp">${AREA[a].ko}</b>${p.done[a] ? `<span class="stamp">달성</span>` : ""}
+          <div class="track" style="margin-top:6px"><div class="fill" style="width:${Math.min(1, p.cnt[a] / p.goal[a]) * 100}%;background:${AREA[a].c}"></div></div></div>
+        <div class="cnt">${p.cnt[a]}<small> / ${p.goal[a]}번</small></div>
+      </div>`).join("")
+    : `<div class="empty"><div class="disp">아직 목표가 없어요</div>‘나의 목표’에서 11월 30일까지 몇 번 할지 먼저 정해요.</div>`;
+
+  let advice = "";
+  if (myGoals && !p.all) {
+    const left = ["R", "A", "S"].filter(a => !p.done[a]).map(a => `${AREA[a].ko} ${p.goal[a] - p.cnt[a]}번`);
+    const daysLeft = periodOpen() ? dayDiff(todayStr(), END) + 1 : 0;
+    advice = `<div class="msg">나만의 목표 달성까지 <b>${left.join(", ")}</b> 남았어요.${daysLeft ? ` 남은 기간은 ${daysLeft}일이에요. 할 수 있어요!` : ""}</div>`;
+  } else if (myGoals && p.all) advice = `<div class="msg"><b>🏆 나만의 목표를 모두 달성했어요!</b> 정말 멋져요. 목표를 더 높여서 또 도전해도 좋아요.</div>`;
+
+  const base = calMonth || new Date(Math.min(Math.max(new Date(todayStr() + "T00:00").getTime(), new Date(START + "T00:00").getTime()), new Date(END + "T00:00").getTime()));
+  const y = base.getFullYear(), m = base.getMonth();
+  const first = new Date(y, m, 1).getDay(), last = new Date(y, m + 1, 0).getDate();
+  const byDay = {}; prs.forEach(r => { (byDay[r.date] ||= new Set()).add(r.area); });
+  let cal = "일월화수목금토".split("").map(w => `<div class="h">${w}</div>`).join("") + "<div></div>".repeat(first);
+  for (let d = 1; d <= last; d++) {
+    const k = `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`, set = byDay[k];
+    const bg = set ? (set.size > 1 ? "var(--teal)" : AREA[[...set][0]].c) : "";
+    const out = k < START || k > END;
+    cal += `<div class="d${set ? " has" : ""}${k === todayStr() ? " today" : ""}" style="${bg ? `background:${bg};` : ""}${out ? "opacity:.35;" : ""}" title="${set ? [...set].join("·") : ""}">${d}${set && set.size > 1 ? `<span class="dots">${"<i></i>".repeat(set.size)}</span>` : ""}</div>`;
+  }
+  const got = MEDALS.filter(M => M.ok(s, p)).length;
+
+  $("pane-grow").innerHTML = `
+    <div class="sec" style="margin-top:0"><h3>나만의 목표 · 11월 30일까지</h3>
+      <div class="progs">${progHtml}</div>${advice}
+    </div>
+
+    <div class="sec"><h3>배지 · ${got}/${MEDALS.length}개</h3>
+      <div class="medals">${MEDALS.map(M => `<div class="medal${M.ok(s, p) ? " got" : ""}"${M.big ? ` style="grid-column:1/-1"` : ""}><div class="ic"${M.big ? ` style="font-size:2.4rem"` : ""}>${M.ic}</div><div class="nm"${M.big ? ` style="font-size:1.2rem"` : ""}>${M.nm}</div>${medalDesc(M, s, p)}${M.ok(s, p) ? `<span class="seal${M.big ? " big" : ""}" aria-label="성공">성공</span>` : ""}</div>`).join("")}</div>
+    </div>
+
+    <div class="sec"><div class="calhead"><button type="button" id="calPrev" aria-label="이전 달">‹</button><h3 style="margin:0">${y}년 ${m + 1}월</h3><button type="button" id="calNext" aria-label="다음 달">›</button></div>
+      <div class="cal">${cal}</div>
+      <p style="font-size:.8rem;color:var(--muted);margin:8px 0 0">파랑 R · 빨강 A · 초록 S · 청록은 하루에 두 영역 이상 한 날 · 흐린 날은 도전 기간 밖</p>
+    </div>
+
+    <div class="stats sec">
+      <div class="stat"><div class="n">${s.total}</div><div class="t">기간 내 기록</div></div>
+      <div class="stat"><div class="n">${s.days}</div><div class="t">활동한 날</div></div>
+      <div class="stat"><div class="n">${s.curStreak}</div><div class="t">연속 기록 일수</div></div>
+    </div>
+
+    <div class="sec"><h3>언제 RAS를 즐겼나요?</h3>
+      <div class="bars">${Object.keys(SLOT).map(k => `<div class="bar"><span>${SLOT[k]}</span><div class="track"><div class="fill" style="width:${s.slot[k] / slotMax * 100}%;background:var(--gold)"></div></div><span class="v">${s.slot[k]}</span></div>`).join("")}</div>
+      ${s.total ? `<div class="msg">활동한 뒤 평균 기분은 <b>${MOOD[Math.round(s.mood)]} ${s.mood.toFixed(1)}점</b>(5점 만점)이에요.</div>` : ""}
+    </div>`;
+  $("calPrev").onclick = () => { calMonth = new Date(y, m - 1, 1); renderGrow(); };
+  $("calNext").onclick = () => { calMonth = new Date(y, m + 1, 1); renderGrow(); };
+}
+function renderAll() { if (me) { renderPeriod(); renderPlan(); renderList(); renderGrow(); } }
+
+/* ---------- 탭 & 로그인 ---------- */
+function selectTab(name) {
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.dataset.tab === name));
+  ["plan", "write", "list", "grow"].forEach(p => $("pane-" + p).hidden = p !== name);
+}
+document.querySelector(".tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) selectTab(b.dataset.tab); });
+$("loginForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const g = +$("lgGrade").value, c = +$("lgClass").value, n = +$("lgNum").value, name = $("lgName").value.trim(), pw = $("lgPw").value.trim();
+  if (!g || !c || !n || !name || !pw) { $("lgErr").textContent = "학년, 반, 번호, 이름, 비밀번호를 모두 써 주세요."; return; }
+  if (pw.length < 4) { $("lgErr").textContent = "비밀번호는 4자리 이상으로 정해 주세요."; return; }
+  $("lgErr").textContent = ""; $("lgBtn").disabled = true; $("lgBtn").textContent = "여는 중…";
+  try { await login(g, c, n, name, pw); $("lgPw").value = ""; }
+  catch (err) { $("lgErr").textContent = err.code ? failMsg(err, "기록장을 열지 못했어요") : err.message; }
+  finally { $("lgBtn").disabled = false; $("lgBtn").textContent = "들어가기"; }
+});
+$("logout").addEventListener("click", () => {
+  if (token) rpc("logout", { p_token: token }).catch(() => {});
+  ss.set("ras:sess", null); me = null; token = null; records = []; myGoals = null;
+  $("app").hidden = true; $("login").hidden = false; $("loginForm").reset(); $("lgErr").textContent = "";
+  selectTab("write");
+});
+
+/* ---------- 선생님 대시보드 ---------- */
+const T = { grade: 0, cls: 0, students: [], recs: [], goals: {}, rows: [], sel: null, sort: "num", token: ss.get("ras:tok"), ask: null, loadedAt: null, timer: null };
+function showTeacher(on) {
+  $("teacher").hidden = !on; $("login").hidden = on; $("app").hidden = true;
+  document.querySelector(".wrap").classList.toggle("wide", on);
+  if (!on) { clearInterval(T.timer); T.timer = null; }
+}
+function teacherExpired() {
+  T.token = null; ss.set("ras:tok", null); openTeacher();
+  $("tPwErr").textContent = "시간이 지나 다시 비밀번호를 입력해야 해요.";
+}
+$("tLock").addEventListener("submit", async e => {
+  e.preventDefault();
+  const pw = $("tPw").value.trim(); if (!pw) return;
+  try {
+    const r = await rpc("teacher_login", { p_pw: pw });
+    if (r?.error) { $("tPwErr").textContent = r.error === "locked" ? "여러 번 틀려서 5분 동안 잠겼어요." : "비밀번호가 맞지 않아요. 선생님 비밀번호는 0000이에요."; $("tPw").select(); return; }
+    T.token = r.token; ss.set("ras:tok", T.token);
+    $("tPw").value = ""; $("tPwErr").textContent = ""; openTeacher();
+  } catch (err) { $("tPwErr").textContent = NET_MSG; }
+});
+function openTeacher() {
+  showTeacher(true);
+  $("tLock").hidden = !!T.token; $("tMain").hidden = !T.token;
+  if (!T.token) { $("tPw").focus(); return; }
+  let last = null; try { last = JSON.parse(localStorage.getItem("ras:tclass")); } catch (e) {}
+  if (T.grade) loadClass(T.grade, T.cls);
+  else if (last?.grade) { $("tGrade").value = last.grade; $("tClass").value = last.cls; loadClass(last.grade, last.cls); }
+  clearInterval(T.timer);
+  T.timer = setInterval(() => { if (T.grade && !document.hidden) loadClass(T.grade, T.cls, true); }, 60000);
+}
+$("toTeacher").addEventListener("click", openTeacher);
+$("tBack").addEventListener("click", () => { showTeacher(false); if (me) { $("login").hidden = true; $("app").hidden = false; } });
+$("tForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const g = +$("tGrade").value, c = +$("tClass").value; if (!g || !c) return;
+  try { localStorage.setItem("ras:tclass", JSON.stringify({ grade: g, cls: c })); } catch (err) {}
+  T.sel = null; loadClass(g, c);
+});
+async function loadClass(g, c, quiet) {
+  const changed = g !== T.grade || c !== T.cls;
+  T.grade = g; T.cls = c;
+  if (changed) { T.sel = null; T.loadedAt = null; }
+  if (!quiet) $("tBody").innerHTML = `<div class="empty" style="margin-top:12px">${g}학년 ${c}반 기록을 불러오는 중…</div>`;
+  try {
+    const [r, gl] = await Promise.all([
+      rpc("class_overview", { p_token: T.token, p_grade: g, p_cls: c }),
+      rpc("class_goals", { p_token: T.token, p_grade: g, p_cls: c }),
+    ]);
+    T.students = r.students || []; T.recs = (r.records || []).map(toRec);
+    T.goals = {}; (gl || []).forEach(x => T.goals[x.sk] = toGoals(x));
+    T.loadedAt = new Date();
+    renderTeacher();
+  } catch (e) {
+    if (e.code === "not_logged_in") { teacherExpired(); return; }
+    if (!quiet) $("tBody").innerHTML = `<div class="empty" style="margin-top:12px"><div class="disp">기록을 불러오지 못했어요</div>${e.code === "server_not_ready" ? SETUP_MSG : NET_MSG}</div>`;
+  }
+}
+function renderTeacher() {
+  const { grade: g, cls: c } = T;
+  const stamp = T.loadedAt ? `<div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:10px;font-size:.82rem;color:var(--muted)">${T.loadedAt.toLocaleTimeString("ko-KR", { hour: "numeric", minute: "2-digit" })}에 불러옴 · 1분마다 새로 고침<button class="tlink" type="button" id="tRefresh">지금 새로 고침</button></div>` : "";
+  if (!T.students.length) {
+    $("tBody").innerHTML = stamp + `<div class="empty" style="margin-top:12px"><div class="disp">${g}학년 ${c}반에는 아직 들어온 학생이 없어요</div>학생들이 학년·반·번호·이름으로 처음 들어오면 이 목록에 나타나요.</div>`;
+    return;
+  }
+  const byKey = {}; T.recs.forEach(r => (byKey[r.sk] ||= []).push(r));
+  const weekAgo = new Date(todayStr() + "T00:00"); weekAgo.setDate(weekAgo.getDate() - 6); const wk = ymd(weekAgo);
+  const rows = T.students.map(st => {
+    const rs = byKey[st.key] || [], goal = T.goals[st.key] || null, p = progress(rs, goal);
+    const prs = rs.filter(inPeriod);
+    const last = prs.reduce((m, r) => r.date > m ? r.date : m, "");
+    return { st, rs, goal, p, last, week: prs.some(r => r.date >= wk), total: prs.length };
+  });
+  T.rows = rows;
+  const sorters = {
+    num: (a, b) => a.st.num - b.st.num,
+    pct: (a, b) => (b.p.pct || 0) - (a.p.pct || 0) || a.st.num - b.st.num,
+    last: (a, b) => (a.last || "0").localeCompare(b.last || "0") || a.st.num - b.st.num,
+  };
+  rows.sort(sorters[T.sort]);
+  const withGoal = rows.filter(r => r.goal).length, achieved = rows.filter(r => r.p.all).length;
+  const totalRecs = rows.reduce((n, r) => n + r.total, 0);
+  const areaDone = { R: rows.filter(r => r.p.done.R).length, A: rows.filter(r => r.p.done.A).length, S: rows.filter(r => r.p.done.S).length };
+  const noGoal = rows.filter(r => !r.goal).sort((a, b) => a.st.num - b.st.num);
+  const quietList = rows.filter(r => !r.week).sort((a, b) => a.st.num - b.st.num);
+  const sel = T.sel && rows.find(r => r.st.key === T.sel);
+  const cell = (r, a) => r.goal ? `<td class="g${r.p.done[a] ? " ok" : ""}">${r.p.cnt[a]}/${r.p.goal[a]}</td>` : `<td class="g" style="color:var(--muted)">${r.p.cnt[a]}/-</td>`;
+
+  $("tBody").innerHTML = stamp + `
+    <div class="stats c4" style="margin-top:12px">
+      <div class="stat"><div class="n">${rows.length}</div><div class="t">참여 학생</div></div>
+      <div class="stat"><div class="n">${withGoal}</div><div class="t">목표 정한 학생</div></div>
+      <div class="stat"><div class="n">${achieved}</div><div class="t">🏆 목표 달성 학생</div></div>
+      <div class="stat"><div class="n">${totalRecs}</div><div class="t">기간 내 반 전체 기록</div></div>
+    </div>
+
+    <div class="sec"><h3>영역별 목표 달성 학생</h3>
+      <div class="bars">${["R", "A", "S"].map(a => `<div class="bar"><span>${a} ${AREA[a].ko}</span><div class="track"><div class="fill" style="width:${areaDone[a] / Math.max(1, withGoal) * 100}%;background:${AREA[a].c}"></div></div><span class="v">${areaDone[a]}명</span></div>`).join("")}</div>
+      <p style="font-size:.8rem;color:var(--muted);margin:6px 0 0">막대 길이는 목표를 정한 학생 ${withGoal}명 기준이에요.</p>
+    </div>
+
+    <div class="sec"><h3>목표를 아직 정하지 않은 학생 · ${noGoal.length}명</h3>
+      ${noGoal.length ? `<div class="quiet">${noGoal.map(r => `<span>${r.st.num}번 ${esc(r.st.name)}</span>`).join("")}</div>` : `<div class="msg">모든 학생이 목표를 정했어요!</div>`}
+    </div>
+
+    <div class="sec"><h3>최근 7일 기록이 없는 학생 · ${quietList.length}명</h3>
+      ${quietList.length ? `<div class="quiet">${quietList.map(r => `<span>${r.st.num}번 ${esc(r.st.name)}</span>`).join("")}</div>` : `<div class="msg">모든 학생이 이번 주에 기록을 남겼어요!</div>`}
+    </div>
+
+    <div class="sec"><h3>학생별 목표 달성 현황</h3>
+      <div class="sorts" id="tSort">${[["num", "번호순"], ["pct", "달성률 높은 순"], ["last", "오래 쉰 순"]].map(([k, t]) => `<button type="button" class="chip" data-v="${k}" aria-pressed="${T.sort === k}">${t}</button>`).join("")}</div>
+      <div class="tscroll"><table class="cls">
+        <thead><tr><th>번호</th><th style="text-align:left">이름</th><th>R 독서</th><th>A 예술</th><th>S 스포츠</th><th>달성률</th><th>나만의 목표</th><th>최근 기록</th><th>학생 화면</th></tr></thead>
+        <tbody>${rows.map(r => `<tr data-k="${esc(r.st.key)}" class="${T.sel === r.st.key ? "sel" : ""}" tabindex="0">
+            <td>${r.st.num}</td><td class="nm">${esc(r.st.name)}</td>
+            ${cell(r, "R")}${cell(r, "A")}${cell(r, "S")}
+            <td>${r.goal ? Math.round(r.p.pct * 100) + "%" : `<span style="color:var(--muted)">목표 없음</span>`}</td>
+            <td>${r.p.all ? "🏆 달성" : r.goal ? `${r.p.nDone}/3` : "-"}</td>
+            <td class="${r.week ? "" : "old"}">${r.last ? fmtDate(r.last) : "없음"}</td>
+            <td><button type="button" class="viewbtn" data-view="${esc(r.st.key)}">👀 보기</button></td></tr>`).join("")}</tbody>
+      </table></div>
+      <p style="font-size:.8rem;color:var(--muted);margin:6px 0 0">칸의 숫자는 ‘한 횟수/목표 횟수’예요. 학생 줄을 누르면 기록을 자세히 볼 수 있어요.</p>
+      ${sel ? `<div class="tdetail">
+        <div class="hd"><h3 style="margin:0">${sel.st.num}번 ${esc(sel.st.name)} · ${sel.p.all ? "🏆 나만의 목표 달성" : sel.goal ? `목표 ${sel.p.nDone}/3 달성` : "목표 없음"}</h3>
+          <span style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">${
+            T.ask === "pw" ? `<span style="font-size:.85rem">비밀번호를 초기화할까요?</span><button class="tlink" type="button" id="tPwYes" style="color:var(--a)">초기화</button><button class="tlink" type="button" id="tNo">취소</button>`
+            : sel.st.hasPw ? `<button class="tlink" type="button" id="tPwAsk">비밀번호 초기화</button>` : `<span style="font-size:.85rem;color:var(--muted)">비밀번호 초기화됨</span>`
+          }<button class="tlink" type="button" id="tClose">닫기</button></span></div>
+        <button type="button" class="cta" data-view="${esc(sel.st.key)}" style="margin-bottom:12px">👀 ${esc(sel.st.name)} 학생 화면으로 보기</button>
+        <div class="list">${sel.rs.length ? sorted(sel.rs).map(r => recHtml(r, false)).join("") : `<div class="empty">아직 남긴 기록이 없어요.</div>`}</div>
+      </div>` : ""}
+    </div>`;
+}
+$("tBody").addEventListener("click", async e => {
+  const sb = e.target.closest("#tSort button"); if (sb) { T.sort = sb.dataset.v; renderTeacher(); return; }
+  const vb = e.target.closest("button[data-view]");
+  if (vb) { const row = T.rows.find(r => r.st.key === vb.dataset.view); if (row) openStudentView(row); return; }
+  const id = e.target.id;
+  if (id === "tRefresh") { loadClass(T.grade, T.cls, true); return; }
+  if (id === "tClose") { T.sel = null; T.ask = null; renderTeacher(); return; }
+  if (id === "tPwAsk") { T.ask = "pw"; renderTeacher(); return; }
+  if (id === "tNo") { T.ask = null; renderTeacher(); return; }
+  if (id === "tPwYes") {
+    const key = T.sel; T.ask = null;
+    try { await rpc("reset_student_pw", { p_token: T.token, p_key: key }); toast("초기화했어요. 학생이 다음에 들어올 때 새 비밀번호를 정해요."); loadClass(T.grade, T.cls, true); }
+    catch (err) { if (err.code === "not_logged_in") teacherExpired(); else { toast(failMsg(err, "처리하지 못했어요")); renderTeacher(); } }
+    return;
+  }
+  const tr = e.target.closest("tr[data-k]");
+  if (tr) { T.sel = T.sel === tr.dataset.k ? null : tr.dataset.k; T.ask = null; renderTeacher(); $("tBody").querySelector(".tdetail")?.scrollIntoView({ behavior: "smooth", block: "nearest" }); }
+});
+/* 선생님이 학생 화면 보기 (이미 불러온 반 데이터로 그려서 읽기만 가능) */
+function openStudentView(row) {
+  viewStash = { me, token, records, myGoals, filter };
+  viewAs = true;
+  me = { key: row.st.key, grade: row.st.grade, cls: row.st.cls, num: row.st.num, name: row.st.name };
+  token = null; records = row.rs.slice(); myGoals = row.goal; filter = "all"; calMonth = null; pendingDelete = null;
+  showTeacher(false);
+  $("login").hidden = true; $("app").hidden = false; $("app").classList.add("viewing"); $("viewBar").hidden = false;
+  $("viewWho").textContent = `${me.grade}학년 ${me.cls}반 ${me.num}번 ${me.name}`;
+  $("who").innerHTML = `${esc(me.name)}<small>${me.grade}학년 ${me.cls}반 ${me.num}번</small>`;
+  $("lFilter").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === "all"));
+  renderAll(); selectTab("grow"); window.scrollTo(0, 0);
+}
+function closeStudentView() {
+  if (!viewAs) return;
+  viewAs = false; $("app").classList.remove("viewing"); $("viewBar").hidden = true;
+  ({ me, token, records, myGoals, filter } = viewStash); viewStash = null; calMonth = null;
+  $("app").hidden = true;
+  if (me) { $("who").innerHTML = `${esc(me.name)}<small>${me.grade}학년 ${me.cls}반 ${me.num}번</small>`; renderAll(); }
+  selectTab("write");
+  openTeacher();
+  setTimeout(() => $("tBody").querySelector(".tdetail")?.scrollIntoView({ block: "nearest" }), 50);
+}
+$("viewBack").addEventListener("click", closeStudentView);
+
+$("tBody").addEventListener("keydown", e => { if (e.key === "Enter" && e.target.matches("tr[data-k]")) e.target.click(); });
+
+/* ---------- 시작 ---------- */
+(() => {
+  const saved = ss.get("ras:sess");
+  if (saved?.token && saved?.me) { me = saved.me; token = saved.token; enterApp(); }
+})();
+</script>
+</body>
+</html>
