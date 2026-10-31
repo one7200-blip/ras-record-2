@@ -293,6 +293,7 @@ body{margin:0}
         <div class="area A"><span class="big">A</span><span class="en">Art</span><span class="ko">예술문화</span></div>
         <div class="area S"><span class="big">S</span><span class="en">Sports</span><span class="ko">스포츠</span></div>
       </div>
+      <div class="note" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span>💡 <b>체험용 학생</b>으로 들어가 보세요.<br>4학년 1반 21번 · 이름 <b>홍길동</b> · 비밀번호 <b>0000</b></span><button class="tlink" type="button" id="lgDemo">체험용 학생 정보 채우기 →</button></div>
       <form id="loginForm" class="stack" autocomplete="off">
         <div class="row c4">
           <label class="f">학년<select class="in" id="lgGrade" required><option value="">선택</option><option value="1">1학년</option><option value="2">2학년</option><option value="3">3학년</option><option value="4">4학년</option><option value="5">5학년</option><option value="6">6학년</option></select></label>
@@ -743,6 +744,10 @@ $("loginForm").addEventListener("submit", async e => {
   try { await login(g, c, n, name, pw); $("lgPw").value = ""; }
   catch (err) { $("lgErr").textContent = err.code ? failMsg(err, "기록장을 열지 못했어요") : err.message; }
   finally { $("lgBtn").disabled = false; $("lgBtn").textContent = "들어가기"; }
+});
+$("lgDemo").addEventListener("click", () => {
+  $("lgGrade").value = "4"; $("lgClass").value = "1"; $("lgNum").value = "21"; $("lgName").value = "홍길동"; $("lgPw").value = "0000";
+  $("lgErr").textContent = ""; $("lgBtn").focus();
 });
 $("logout").addEventListener("click", () => {
   if (token) rpc("logout", { p_token: token }).catch(() => {});
