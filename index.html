@@ -166,6 +166,8 @@ textarea.in { resize: vertical; min-height: 78px; }
 .medal.got { border-color: var(--gold); background: #fffaf0; }
 .medal.got .ic { filter: none; opacity: 1; }
 .medal.got .nm { color: var(--ink); }
+.medal .now { display: block; width: fit-content; max-width: 100%; margin: 6px auto 0; background: #e3f4f5; color: var(--teal-dk); border-radius: 10px; padding: 3px 8px; line-height: 1.35; font-family: var(--display); font-size: .82rem; }
+.medal .now.got { background: #fff1c9; color: #8a5a00; }
 /* 성공 도장 */
 .medal { position: relative; }
 .seal { position: absolute; top: -10px; right: -8px; width: 44px; height: 44px; border-radius: 50%; border: 3px double #d9342b; color: #d9342b; background: rgba(255,250,240,.85); display: grid; place-items: center; font-family: var(--display); font-size: .85rem; letter-spacing: .05em; transform: rotate(-16deg); box-shadow: inset 0 0 0 2px rgba(217,52,43,.15); animation: stampIn .45s cubic-bezier(.3,1.6,.5,1) both; pointer-events: none; }
@@ -459,20 +461,26 @@ const MOOD = { 5: "😆", 4: "🙂", 3: "😐", 2: "😕", 1: "😣" };
 /* 배지: s = 기간 안 기록 통계, p = 나만의 목표 달성 정보 */
 const MEDALS = [
   { ic: "🏆", nm: "나만의 목표 달성", ok: (s, p) => p.all, big: true,
-    d: (s, p) => p.goal ? `독서 ${p.goal.R}번 · 예술문화 ${p.goal.A}번 · 스포츠 ${p.goal.S}번 모두 채우기` : "세 영역 목표 모두 채우기" },
-  { ic: "📚", nm: "독서 목표 달성", ok: (s, p) => p.done.R, d: (s, p) => goalText("R", p) },
-  { ic: "🎨", nm: "예술문화 목표 달성", ok: (s, p) => p.done.A, d: (s, p) => goalText("A", p) },
-  { ic: "⚽", nm: "스포츠 목표 달성", ok: (s, p) => p.done.S, d: (s, p) => goalText("S", p) },
-  { ic: "🌱", nm: "첫걸음", d: "첫 기록 남기기", ok: s => s.total >= 1 },
-  { ic: "⚖️", nm: "균형 잡기", d: "세 영역 모두 3번", ok: s => Math.min(s.cnt.R, s.cnt.A, s.cnt.S) >= 3 },
-  { ic: "🔥", nm: "연속 3일", d: "3일 연속 기록", ok: s => s.bestStreak >= 3 },
-  { ic: "🏃", nm: "연속 7일", d: "7일 연속 기록", ok: s => s.bestStreak >= 7 },
-  { ic: "🍱", nm: "점심 탐험가", d: "점심 시간 5번", ok: s => s.slot.lunch >= 5 },
-  { ic: "✍️", nm: "생각 부자", d: "느낀 점 50자 이상 5번", ok: s => s.longFeel >= 5 },
+    d: (s, p) => p.goal ? `독서 ${p.goal.R}번 · 예술문화 ${p.goal.A}번 · 스포츠 ${p.goal.S}번 모두 채우기` : "세 영역 목표 모두 채우기",
+    now: (s, p) => !p.goal ? "‘나의 목표’에서 먼저 목표를 정해요"
+      : `${["R", "A", "S"].filter(a => !p.done[a]).map(a => `${AREA[a].ko} ${p.goal[a] - p.cnt[a]}번`).join(" · ")} 더!` },
+  { ic: "📚", nm: "독서 목표 달성", ok: (s, p) => p.done.R, d: (s, p) => goalText("R", p), now: (s, p) => goalNow("R", p) },
+  { ic: "🎨", nm: "예술문화 목표 달성", ok: (s, p) => p.done.A, d: (s, p) => goalText("A", p), now: (s, p) => goalNow("A", p) },
+  { ic: "⚽", nm: "스포츠 목표 달성", ok: (s, p) => p.done.S, d: (s, p) => goalText("S", p), now: (s, p) => goalNow("S", p) },
+  { ic: "🌱", nm: "첫걸음", d: "첫 기록 남기기", ok: s => s.total >= 1, now: () => "1번만 기록하면 돼요!" },
+  { ic: "⚖️", nm: "균형 잡기", d: "세 영역 모두 3번씩", ok: s => Math.min(s.cnt.R, s.cnt.A, s.cnt.S) >= 3,
+    now: s => `지금 R ${s.cnt.R} · A ${s.cnt.A} · S ${s.cnt.S}번` },
+  { ic: "🔥", nm: "연속 3일", d: "3일 연속 기록", ok: s => s.bestStreak >= 3, now: s => countNow(s.bestStreak, 3, "일", "최고 ") },
+  { ic: "🏃", nm: "연속 7일", d: "7일 연속 기록", ok: s => s.bestStreak >= 7, now: s => countNow(s.bestStreak, 7, "일", "최고 ") },
+  { ic: "🍱", nm: "점심 탐험가", d: "점심 시간에 5번", ok: s => s.slot.lunch >= 5, now: s => countNow(s.slot.lunch, 5, "번") },
+  { ic: "✍️", nm: "생각 부자", d: "느낀 점 50자 이상 5번", ok: s => s.longFeel >= 5, now: s => countNow(s.longFeel, 5, "번") },
 ];
+/* 배지 아래 숫자 안내: "지금 2번 · 3번 더!" */
+const countNow = (cur, need, unit, pre = "") => `지금 ${pre}${cur}${unit}<br>${need - cur}${unit} 더!`;
+const goalNow = (a, p) => p.goal ? countNow(p.cnt[a], p.goal[a], "번") : "‘나의 목표’에서 먼저 목표를 정해요";
 
 /* 배지 설명: 학생이 정한 목표 숫자와 지금 한 횟수 */
-const goalText = (a, p) => p.goal ? `${AREA[a].ko} ${p.goal[a]}번 채우기 (지금 ${p.cnt[a]}번)` : `${AREA[a].ko} 목표 횟수 채우기`;
+const goalText = (a, p) => p.goal ? `${AREA[a].ko} ${p.goal[a]}번 채우기` : `${AREA[a].ko} 목표 횟수 채우기`;
 const medalDesc = (M, s, p) => typeof M.d === "function" ? M.d(s, p) : M.d;
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -706,7 +714,7 @@ function renderGrow() {
     </div>
 
     <div class="sec"><h3>배지 · ${got}/${MEDALS.length}개</h3>
-      <div class="medals">${MEDALS.map(M => `<div class="medal${M.ok(s, p) ? " got" : ""}"${M.big ? ` style="grid-column:1/-1"` : ""}><div class="ic"${M.big ? ` style="font-size:2.4rem"` : ""}>${M.ic}</div><div class="nm"${M.big ? ` style="font-size:1.2rem"` : ""}>${M.nm}</div>${medalDesc(M, s, p)}${M.ok(s, p) ? `<span class="seal${M.big ? " big" : ""}" aria-label="성공">성공</span>` : ""}</div>`).join("")}</div>
+      <div class="medals">${MEDALS.map(M => `<div class="medal${M.ok(s, p) ? " got" : ""}"${M.big ? ` style="grid-column:1/-1"` : ""}><div class="ic"${M.big ? ` style="font-size:2.4rem"` : ""}>${M.ic}</div><div class="nm"${M.big ? ` style="font-size:1.2rem"` : ""}>${M.nm}</div>${medalDesc(M, s, p)}<div class="now${M.ok(s, p) ? " got" : ""}">${M.ok(s, p) ? "다 했어요! 🎉" : M.now(s, p)}</div>${M.ok(s, p) ? `<span class="seal${M.big ? " big" : ""}" aria-label="성공">성공</span>` : ""}</div>`).join("")}</div>
     </div>
 
     <div class="sec"><div class="calhead"><button type="button" id="calPrev" aria-label="이전 달">‹</button><h3 style="margin:0">${y}년 ${m + 1}월</h3><button type="button" id="calNext" aria-label="다음 달">›</button></div>
